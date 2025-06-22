@@ -12,10 +12,15 @@ load_dotenv()
 
 app = FastAPI()
 
-# ✅ CORS middleware
+# ✅ CORS middleware — Best Practice (only allow frontend)
+origins = [
+    "https://quiz-frontend-pctg.vercel.app",  # ✅ Your live frontend domain
+    "http://localhost:3000"  # ✅ Optional: useful during local dev
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
