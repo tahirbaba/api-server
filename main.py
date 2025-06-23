@@ -12,10 +12,10 @@ load_dotenv()
 
 app = FastAPI()
 
-# ✅ CORS middleware — Best Practice (only allow frontend)
+# ✅ CORS Setup
 origins = [
-    "https://quiz-frontend-pctg.vercel.app",  # ✅ Your live frontend domain
-    "http://localhost:3000"  # ✅ Optional: useful during local dev
+    "https://quiz-frontend-pctg.vercel.app",
+    "http://localhost:3000"
 ]
 
 app.add_middleware(
@@ -26,7 +26,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ✅ OpenRouter setup
+# ✅ LLM Setup
 llm = ChatOpenAI(
     model="openai/gpt-3.5-turbo",
     base_url="https://openrouter.ai/api/v1",
@@ -35,7 +35,7 @@ llm = ChatOpenAI(
     max_tokens=800
 )
 
-# ✅ Convert raw text to frontend-compatible questions
+# ✅ Parse questions
 def parse_mcqs(text):
     pattern = r"Question:\s*(.*?)\n\s*a\)\s*(.*?)\n\s*b\)\s*(.*?)\n\s*c\)\s*(.*?)\n\s*d\)\s*(.*?)\n\s*Answer:\s*([abcd])"
     matches = re.findall(pattern, text, re.DOTALL)
@@ -58,7 +58,7 @@ def parse_mcqs(text):
 
     return mcqs
 
-# ✅ API Endpoint
+# ✅ Endpoint
 @app.post("/generate-quiz")
 async def generate_quiz(request: Request):
     body = await request.json()
@@ -82,6 +82,13 @@ Answer: <correct option letter>
     mcqs = parse_mcqs(response.content)
 
     if not mcqs:
-        return {"success": False, "message": "No questions generated"}
+        return {
+            "success": False,
+            "questions": [],
+            "message": "No questions generated"
+        }
 
-    return {"success": True, "questions": mcqs}
+    return {
+        "success": True,
+        "questions": mcqs
+    }
